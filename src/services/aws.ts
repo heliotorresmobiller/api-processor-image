@@ -1,36 +1,22 @@
-import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
+import AWS from 'aws-sdk'
 
-const s3 = new S3Client({
+const s3 = new AWS.S3({
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     region: process.env.AWS_REGION,
-    credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-    },
 });
 
 export async function getS3Object(key: string): Promise<Buffer> {
-    const command = new GetObjectCommand({
+    const params = {
         Bucket: process.env.S3_BUCKET_NAME!,
         Key: key,
-    });
+    };
 
-    const data = await s3.send(command);
+    const data = await s3.getObject(params).promise();
 
-    if (data.Body && data.Body instanceof ReadableStream) {
-        return await streamToBuffer(data.Body);
+    if (data.Body && Buffer.isBuffer(data.Body)) {
+        return data.Body as Buffer;
     } else {
-        throw new Error('Expected data.Body into ReadableStream: ' + typeof data.Body);
+        throw new Error('Expected Body to be a Buffer, got: ' + typeof data.Body);
     }
-}
-
-async function streamToBuffer(readableStream: ReadableStream<any>): Promise<Buffer> {
-    const chunks: Uint8Array[] = [];
-    const reader = readableStream.getReader();
-    let done, value;
-
-    while ({ done, value } = await reader.read(), !done) {
-        chunks.push(value);
-    }
-
-    return Buffer.concat(chunks);
 }
