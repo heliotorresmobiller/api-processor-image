@@ -5,7 +5,7 @@ import { processImage } from '../services/image';
 
 export async function handleImageProcessor(req: Request, res: Response): Promise<any> {
     const { key } = req.params;
-    const { w, h, q = 85, fm, gray = 0 } = req.query;
+    const { w, h, q = 85, fm, gray = 0, b } = req.query;
 
     const width = w ? parseInt(w as string, 10) : undefined;
     const height = h ? parseInt(h as string, 10) : undefined;

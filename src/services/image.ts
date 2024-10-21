@@ -15,7 +15,9 @@ export async function processImage(
     let image = sharp(buffer);
 
     if (width || height) {
-        image = image.resize(width, height);
+        image = image.resize(width, height, {
+            fit: 'contain'
+        });
     }
 
     if (grayscale) {
